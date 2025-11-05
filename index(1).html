@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radist.Online × Яндекс Метрика — Тест</title>
+<meta name="color-scheme" content="dark light">
+<style>
+  :root { --bg:#0f1115; --card:#171a21; --line:#2a2f3a; --text:#e6e9f2; --muted:#a3adbd; }
+  * { box-sizing: border-box; } body { margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:var(--bg); color:var(--text); }
+  header { position:sticky; top:0; backdrop-filter:saturate(1.4) blur(6px); background:rgba(15,17,21,.7); border-bottom:1px solid var(--line);}
+  .wrap { max-width: 960px; margin: 0 auto; padding: 20px; } h1 { margin: 0; font-size: 22px; }
+  .muted { color:var(--muted); font-size:14px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin:16px 0; }
+  .grid { display:grid; gap:12px; }
+  input[type=text]{ width:100%; padding:12px; border-radius:12px; border:1px solid var(--line); background:#0c0f14; color:var(--text); }
+  .btn { display:inline-flex; align-items:center; gap:8px; border:1px solid var(--line); padding:12px 16px; border-radius:12px; background:#1f2430; color:var(--text); cursor:pointer; }
+  .btn:hover{ filter:brightness(1.08); }
+  .option{ display:flex; align-items:center; gap:10px; border:1px solid var(--line); border-radius:12px; padding:10px; cursor:pointer; }
+  .option input{ margin:0; }
+  .correct{ border-color:#2e7d32; background:#132a18; }
+  .incorrect{ border-color:#b71c1c; background:#2a1616; }
+  .flex{ display:flex; gap:10px; flex-wrap:wrap; }
+  .pill{ display:inline-block; padding:4px 10px; border-radius:999px; border:1px solid var(--line); background:#1b2130; color:#cdd6e4; font-size:12px; }
+  footer{ color:var(--muted); font-size:12px; padding:24px 0 40px; }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>Radist.Online × Яндекс Метрика — Практический тест</h1>
+  <div class="muted">15 вопросов • Один правильный ответ • Результаты пишутся в общую таблицу</div>
+</div></header>
+
+<main class="wrap">
+  <section id="intro" class="card grid">
+    <div class="grid">
+      <label>Ваше имя <span class="muted">(обязательно)</span>
+        <input id="name" type="text" placeholder="Например: Дмитрий">
+      </label>
+      <label>Отдел/команда <span class="muted">(обязательно)</span>
+        <input id="group" type="text" placeholder="Например: Support">
+      </label>
+    </div>
+    <div><button id="start" class="btn">Начать тест</button></div>
+  </section>
+
+  <section id="quiz" class="grid"></section>
+
+  <section id="result" class="card grid" style="display:none;">
+    <div id="score"></div>
+    <div class="flex"><span class="pill" id="runid"></span><span class="pill" id="who"></span></div>
+    <div id="review" class="grid"></div>
+    <div class="flex">
+      <button class="btn" onclick="location.reload()">Пройти ещё раз</button>
+      <button class="btn" id="copy">Скопировать ссылку</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="muted">Разместите файл на GitHub Pages/Netlify для доступа по ссылке. Webhook уже прошит в код.</div>
+  </section>
+</main>
+
+<footer class="wrap">© Radist.Online • Тест по интеграции с Яндекс Метрикой</footer>
+
+<script>
+const FIXED_WEBHOOK = "https://script.google.com/macros/s/AKfycbwXmXxH-zeWMQhbh09geod3lHtmmPr80ptCUaoUJMSSQJ46t7Qxkp2SCb9sUtT-TqQoQ/exec";
+const QUIZ_ID = "radist-metrika-quiz";
+const QUESTIONS = [{"q": "Что нужно подключить на сайте, чтобы чаты корректно связывались с визитами и передавались как офлайн-конверсии в Метрику?", "options": ["Вебвизор", "Сквозную аналитику", "Экспорт визитов в CRM", "UTM-шаблоны"], "answer": 1, "explain": "Интеграция опирается на Сквозную аналитику: она связывает clientID визита с событием чата."}, {"q": "Что автоматически появляется в Метрике после успешной передачи событий чатов?", "options": ["Новый счётчик", "Автоцель «Chat» и офлайн-конверсии", "Набор UTM-меток", "Экспорт данных в CRM"], "answer": 1, "explain": "Метрика создаёт автоцель «Chat», события учитываются как офлайн‑конверсии."}, {"q": "Список счётчиков в кабинете Radist.Online пуст. Что проверить в первую очередь?", "options": ["Отключить и включить Сквозную аналитику", "Наличие имён у счётчиков в Метрике", "Очистить кэш браузера", "Включить Вебвизор"], "answer": 1, "explain": "Безымянные счётчики не подгружаются — задайте имя счётчикам."}, {"q": "Какие каналы поддерживает интеграция Метрики?", "options": ["Telegram, Telegram Bot, WhatsApp Business/WABA", "VK, Viber, Email", "MAX, Telegram, Instagram", "Только WhatsApp Business"], "answer": 0, "explain": "Поддерживаются Telegram, Telegram Bot, WhatsApp Business и WABA (MAX — нет)."}, {"q": "Что делать при сообщении «Ошибка авторизации. Необходимо заново авторизоваться»?", "options": ["Удалить счётчик", "Нажать «Войти с Яндекс ID» и выбрать счётчик заново", "Создать интеграцию с нуля", "Просто нажать «Сохранить»"], "answer": 1, "explain": "Повторная авторизация обновляет токен и восстанавливает соединение."}, {"q": "Счётчик удалён в Метрике, интеграция в Radist.Online активна. Что произойдёт?", "options": ["Интеграция продолжит работу с задержками", "Передача данных остановится, выберите другой активный счётчик", "Метрика сама создаст новый счётчик", "Нужно удалить интеграцию и Сквозную аналитику"], "answer": 1, "explain": "Нужно вручную выбрать другой активный счётчик и сохранить."}, {"q": "Когда в amoCRM заполняются метки (clientID и др.) из Метрики?", "options": ["При первом создании сделки", "При любом сообщении клиента", "При повторном обращении", "После ручной синхронизации"], "answer": 0, "explain": "Метки ставятся только при первом создании сделки."}, {"q": "Где в amoCRM увидеть метки из систем статистики?", "options": ["Сделка → вкладка «Статистика» → «Метки систем статистики»", "Карточка контакта → «Заметки»", "Настройки аккаунта → Интеграции", "Воронка → Настройки статусов"], "answer": 0, "explain": "Ищите в карточке сделки, вкладка «Статистика»."}, {"q": "Что НЕ поддерживается интеграцией на сегодня?", "options": ["Telegram", "WABA", "MAX", "WhatsApp Business"], "answer": 2, "explain": "MAX пока не поддерживается."}, {"q": "Когда может потребоваться повторная авторизация Яндекс ID?", "options": ["Если протух токен/вышли из Яндекс ID/не использовали > 1 мес", "Только если изменилась воронка в amoCRM", "Каждые 24 часа", "После каждого чата"], "answer": 0, "explain": "При устаревшем токене, выходе из аккаунта или долгом простое."}, {"q": "Чтобы поля в amoCRM заполнялись данными Метрики, нужно…", "options": ["Включить «Неразобранное»", "Отключить автоцели", "Разрешить создание сделок в любом статусе, кроме «Неразобранного»", "Создавать сделки только вручную"], "answer": 2, "explain": "Создание сделок должно быть включено в статусах, отличных от «Неразобранного»."}, {"q": "Где в Radist.Online проверить статус подключения трекера на сайт?", "options": ["«Интеграции»", "«Аналитика»", "«Рассылки»", "«Команда»"], "answer": 1, "explain": "Проверка статуса трекера — в разделе «Аналитика»."}, {"q": "Какие идентификаторы связывают визит в Метрике с конкретным чатом в CRM?", "options": ["ClientID и ChatID", "UTM Source и Referrer", "OrderID и InvoiceID", "UserAgent и IP"], "answer": 0, "explain": "Пара ClientID+ChatID."}, {"q": "Цель «Chat» в Яндекс.Директ можно…", "options": ["Ничего, служебная", "Использовать для оптимизации", "Только смотреть в отчётах", "Только экспортировать в CSV"], "answer": 1, "explain": "Автоцель «Chat» доступна для оптимизации кампаний."}, {"q": "Правильная последовательность первичного подключения интеграции:", "options": ["Выбрать счётчик → Войти с Яндекс ID → Сохранить", "Войти с Яндекс ID → Выбрать счётчик → Сохранить", "Сохранить → Войти с Яндекс ID → Выбрать счётчик", "Ничего, всё создастся само"], "answer": 1, "explain": "Сначала авторизация, затем выбор счётчика и сохранение."}];
+
+const intro = document.getElementById('intro');
+const quiz = document.getElementById('quiz');
+const result = document.getElementById('result');
+const scoreEl = document.getElementById('score');
+const runidEl = document.getElementById('runid');
+const whoEl = document.getElementById('who');
+
+let answers = new Array(QUESTIONS.length).fill(null);
+let runId = null;
+
+function el(t,c,h){ const e=document.createElement(t); if(c) e.className=c; if(h!==undefined) e.innerHTML=h; return e; }
+
+document.getElementById('start').addEventListener('click', () => {
+  const name = document.getElementById('name').value.trim();
+  const group = document.getElementById('group').value.trim();
+  if(!name || !group){ alert('Введите имя и отдел'); return; }
+  startQuiz(name, group);
+});
+
+function startQuiz(name, group){
+  runId = QUIZ_ID + "-" + Date.now();
+  intro.style.display = 'none';
+  quiz.innerHTML='';
+
+  QUESTIONS.forEach((q, idx)=>{
+    const card = el('section','card');
+    card.appendChild(el('div',null,`<b>Вопрос ${idx+1}/${QUESTIONS.length}.</b> ${q.q}`));
+    q.options.forEach((opt, oi)=>{
+      const optDiv = el('label','option');
+      const input = el('input'); input.type='radio'; input.name='q'+idx; input.value=oi;
+      input.addEventListener('change', ()=>answers[idx]=oi);
+      optDiv.appendChild(input); optDiv.appendChild(el('span',null,opt));
+      card.appendChild(optDiv);
+    });
+    quiz.appendChild(card);
+  });
+
+  const submitWrap = el('div','card');
+  const btn = el('button','btn','Завершить и отправить');
+  btn.addEventListener('click', ()=>submitQuiz(name, group));
+  submitWrap.appendChild(btn);
+  quiz.appendChild(submitWrap);
+}
+
+async function submitQuiz(name, group){
+  let correct=0;
+  const details = QUESTIONS.map((q,i)=>{
+    const ok = (answers[i]===q.answer); if(ok) correct++;
+    return { q:q.q, selected:answers[i], correct:q.answer, isCorrect:ok };
+  });
+  const percent = Math.round(100*correct/QUESTIONS.length);
+
+  const cards = quiz.querySelectorAll('.card');
+  cards.forEach((card,i)=>{
+    if(!QUESTIONS[i]) return;
+    const opts = card.querySelectorAll('.option');
+    opts.forEach((o,oi)=>{
+      o.classList.remove('correct','incorrect');
+      if(oi===QUESTIONS[i].answer) o.classList.add('correct');
+      if(answers[i]===oi && oi!==QUESTIONS[i].answer) o.classList.add('incorrect');
+      const input = o.querySelector('input'); if(input) input.disabled = true;
+    });
+  });
+
+  result.style.display='block';
+  scoreEl.innerHTML = `<b>${correct} / ${QUESTIONS.length}</b> правильных • <b>${percent}%</b>`;
+  runidEl.textContent = "RunID: " + runId;
+  whoEl.textContent = `${name} • ${group}`;
+
+  const review = document.getElementById('review');
+  review.innerHTML='';
+  QUESTIONS.forEach((q,i)=>{
+    const b = el('div','card');
+    b.appendChild(el('div',null,`<b>Вопрос ${i+1}:</b> ${q.q}`));
+    b.appendChild(el('div',null,`Ваш ответ: <b>${answers[i]!=null? q.options[answers[i]]:'—'}</b>`));
+    b.appendChild(el('div',null,`Правильный ответ: <b>${q.options[q.answer]}</b>`));
+    b.appendChild(el('div','muted',q.explain));
+    review.appendChild(b);
+  });
+
+  try{
+    await fetch(FIXED_WEBHOOK, { method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ quiz_id: QUIZ_ID, run_id: runId,
+        user_name:name, user_group:group, timestamp:new Date().toISOString(),
+        correct, total: QUESTIONS.length, percent, details }) 
+    });
+  }catch(e){ console.warn('Не удалось отправить статистику', e); }
+
+  document.getElementById('copy').onclick = () => navigator.clipboard.writeText(location.href);
+}
+</script>
+</body>
+</html>
